@@ -51,59 +51,63 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           centerTitle: true,
         ),
-        body: StreamBuilder<ItuneResponse>(
-          stream: _ituneBloc.ituneStream,
-          builder: (BuildContext context, AsyncSnapshot<ItuneResponse> snapshot) {
-            if (snapshot.hasError) {
+        body: buildScaffoldBody(),
+      ),
+    );
+  }
+
+  StreamBuilder<ItuneResponse> buildScaffoldBody() {
+    return StreamBuilder<ItuneResponse>(
+        stream: _ituneBloc.ituneStream,
+        builder: (BuildContext context, AsyncSnapshot<ItuneResponse> snapshot) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(snapshot.error.toString()),
+            );
+          } else if (snapshot.hasData) {
+            if (snapshot.data.ituneModel.feed.results == null)
               return Center(
-                child: Text(snapshot.error.toString()),
+                child: Text("No data found"),
               );
-            } else if (snapshot.hasData) {
-              if (snapshot.data.ituneModel.feed.results == null)
-                return Center(
-                  child: Text("No data found"),
-                );
-              return ListView.builder(
-                itemCount: snapshot.data.ituneModel.feed.results.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return Card(
-                    elevation: AppConstant.px0,
-                    child: ListTile(
-                      onTap: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (BuildContext context) => MusicScreen(
-                                index, snapshot.data.ituneModel.feed.results)));
-                      },
-                      leading: CircleAvatar(
-                        backgroundImage: CachedNetworkImageProvider(snapshot
-                            .data.ituneModel.feed.results[index].artworkUrl100),
-                      ),
-                      title: Text(
-                        snapshot.data.ituneModel.feed.results[index].name,
-                        style: TextStyle(color: AppConstant.DarkColor),
-                      ),
-                      subtitle: MyShaderMask(
-                        child: Text(
-                          snapshot.data.ituneModel.feed.results[index].artistName,
-                          style: GoogleFonts.lato(),
-                        ),
-                      ),
-                      trailing: Text(
-                        snapshot.data.ituneModel.feed.results[index].releaseDate,
+            return ListView.builder(
+              itemCount: snapshot.data.ituneModel.feed.results.length,
+              itemBuilder: (BuildContext context, int index) {
+                return Card(
+                  elevation: AppConstant.px0,
+                  child: ListTile(
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (BuildContext context) => MusicScreen(
+                              index, snapshot.data.ituneModel.feed.results)));
+                    },
+                    leading: CircleAvatar(
+                      backgroundImage: CachedNetworkImageProvider(snapshot
+                          .data.ituneModel.feed.results[index].artworkUrl100),
+                    ),
+                    title: Text(
+                      snapshot.data.ituneModel.feed.results[index].name,
+                      style: TextStyle(color: AppConstant.DarkColor),
+                    ),
+                    subtitle: MyShaderMask(
+                      child: Text(
+                        snapshot.data.ituneModel.feed.results[index].artistName,
                         style: GoogleFonts.lato(),
                       ),
                     ),
-                  );
-                },
-              );
-            } else {
-              return Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-          },
-        ),
-      ),
-    );
+                    trailing: Text(
+                      snapshot.data.ituneModel.feed.results[index].releaseDate,
+                      style: GoogleFonts.lato(),
+                    ),
+                  ),
+                );
+              },
+            );
+          } else {
+            return Center(
+              child: MyShaderMask(child: CircularProgressIndicator()),
+            );
+          }
+        },
+      );
   }
 }

@@ -19,6 +19,7 @@ class MusicScreen extends StatefulWidget {
 
 class _MusicScreenState extends State<MusicScreen>
     with SingleTickerProviderStateMixin {
+  PageController _pageController;
   Animation _animation;
   AnimationController _animationController;
   double _seekVal;
@@ -29,6 +30,7 @@ class _MusicScreenState extends State<MusicScreen>
     super.initState();
     _seekVal = math.Random().nextDouble();
     _currenIndex = widget.index;
+    _pageController = PageController(initialPage: widget.index);
     _animationController = AnimationController(
         vsync: this, duration: Duration(milliseconds: 1500));
     _animation =
@@ -78,109 +80,124 @@ class _MusicScreenState extends State<MusicScreen>
       child: Scaffold(
         backgroundColor: AppConstant.BgColor,
         appBar: buildAppBar(),
-        body: Container(
-          child: Column(
-            //mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                margin: const EdgeInsets.all(AppConstant.px16),
-                width: size.width / 2 - 4,
-                height: size.width / 2 - 4,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(AppConstant.px24),
-                  boxShadow: [
-                    BoxShadow(
-                        blurRadius: 2,
-                        offset: Offset(-2, -2),
-                        color: AppConstant.PrimaryColor),
-                    BoxShadow(
-                        blurRadius: 2,
-                        offset: Offset(-2, 2),
-                        color: AppConstant.SecondaryColor),
-                    BoxShadow(
-                        blurRadius: 2,
-                        offset: Offset(2, -2),
-                        color: AppConstant.SecondaryColor),
-                    BoxShadow(
-                      blurRadius: 2,
-                      offset: Offset(2, 2),
-                      color: AppConstant.AccentColor,
-                    )
-                  ],
-                  image: DecorationImage(
-                      image: CachedNetworkImageProvider(
-                          widget.result[_currenIndex].artworkUrl100),
-                      fit: BoxFit.cover),
-                ),
-              ),
-              MyShaderMask(
-                child: Text(
-                  widget.result[_currenIndex].name,
-                  style: GoogleFonts.lobster(
-                      fontSize: AppConstant.px20, fontWeight: FontWeight.w100),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: MyShaderMask(
-                  child: Text(
-                    widget.result[_currenIndex].artistName,
-                    style: GoogleFonts.lato(fontSize: AppConstant.px16),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: AppConstant.px24, vertical: AppConstant.px2),
-                child: Wrap(
-                  children: getGenreList(),
-                ),
-              ),
-              Spacer(),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: AppConstant.px20, vertical: AppConstant.px2),
-                child: MyShaderMask(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: AppConstant.px24),
-                        child: Row(
-                          children: [
-                            Text(
-                              '${(6 * _seekVal).toStringAsFixed(2)}',
-                              style:
-                                  GoogleFonts.lato(fontSize: AppConstant.px12),
-                            ),
-                            Spacer(),
-                            Text(
-                              '6:00',
-                              style:
-                                  GoogleFonts.lato(fontSize: AppConstant.px12),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Slider(
-                        value: _seekVal,
-                        onChanged: (double value) {
-                          _seekVal = value;
-                          setState(() {});
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
+        body: PageView.builder(
+          controller: _pageController,
+          onPageChanged: (index) {
+            _currenIndex = index;
+            _pageController.animateToPage(index,
+                duration: Duration(milliseconds: 200),
+                curve: Curves.easeInCubic);
+            setState(() {});
+          },
+          itemCount: widget.result.length,
+          itemBuilder: (BuildContext context, int index) {
+            return buildScaffoldBody(size);
+          },
         ),
         bottomNavigationBar: buildContainer(size),
+      ),
+    );
+  }
+
+  Container buildScaffoldBody(Size size) {
+    return Container(
+      child: Column(
+        //mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            margin: const EdgeInsets.all(AppConstant.px16),
+            width: size.width / 2 - 4,
+            height: size.width / 2 - 4,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppConstant.px24),
+              boxShadow: [
+                BoxShadow(
+                    blurRadius: 2,
+                    offset: Offset(-2, -2),
+                    color: AppConstant.PrimaryColor),
+                BoxShadow(
+                    blurRadius: 2,
+                    offset: Offset(-2, 2),
+                    color: AppConstant.SecondaryColor),
+                BoxShadow(
+                    blurRadius: 2,
+                    offset: Offset(2, -2),
+                    color: AppConstant.SecondaryColor),
+                BoxShadow(
+                  blurRadius: 2,
+                  offset: Offset(2, 2),
+                  color: AppConstant.AccentColor,
+                )
+              ],
+              image: DecorationImage(
+                  image: CachedNetworkImageProvider(
+                      widget.result[_currenIndex].artworkUrl100),
+                  fit: BoxFit.cover),
+            ),
+          ),
+          MyShaderMask(
+            child: Text(
+              widget.result[_currenIndex].name,
+              style: GoogleFonts.lobster(
+                  fontSize: AppConstant.px20, fontWeight: FontWeight.w100),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: MyShaderMask(
+              child: Text(
+                widget.result[_currenIndex].artistName,
+                style: GoogleFonts.lato(fontSize: AppConstant.px16),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppConstant.px24, vertical: AppConstant.px2),
+            child: Wrap(
+              children: getGenreList(),
+            ),
+          ),
+          Spacer(),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppConstant.px20, vertical: AppConstant.px2),
+            child: MyShaderMask(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppConstant.px24),
+                    child: Row(
+                      children: [
+                        Text(
+                          '${(6 * _seekVal).toStringAsFixed(2)}',
+                          style: GoogleFonts.lato(fontSize: AppConstant.px12),
+                        ),
+                        Spacer(),
+                        Text(
+                          '6:00',
+                          style: GoogleFonts.lato(fontSize: AppConstant.px12),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Slider(
+                    value: _seekVal,
+                    onChanged: (double value) {
+                      _seekVal = value;
+                      setState(() {});
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
